@@ -1,103 +1,6 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Attendance Form</title>
-
-<style>
-body {
-  font-family: Arial, sans-serif;
-  background: #f5f5f5;
-}
-form {
-  max-width: 420px;
-  margin: auto;
-  background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-}
-h2 { text-align: center; }
-.label { font-weight: bold; display: block; margin-top: 10px; }
-input[type="text"] {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-}
-.checkbox-group {
-  display: flex;
-  gap: 16px;
-  margin-top: 6px;
-}
-button {
-  width: 100%;
-  margin-top: 20px;
-  padding: 10px;
-}
-</style>
-</head>
-
-<body>
-
-<form id="attendanceForm">
-
-<h2>Attendance Form</h2>
-
-<label class="label">Employee Name</label>
-<input type="text" id="emp_name" required>
-
-<label class="label">Site Name</label>
-<input type="text" id="site_name" required>
-
-<span class="label">Attendance Type</span>
-<div class="checkbox-group">
-  <label><input type="checkbox" name="attendance" value="Check In"> Check In</label>
-  <label><input type="checkbox" name="attendance" value="Check Out"> Check Out</label>
-</div>
-
-<span class="label">Are you late?</span>
-<div class="checkbox-group">
-  <label><input type="checkbox" name="late" value="No"> No</label>
-  <label><input type="checkbox" name="late" value="Yes"> Yes</label>
-</div>
-
-<div id="remarksBox" style="display:none;">
-  <label class="label">Remarks</label>
-  <input type="text" id="remarks">
-</div>
-
-<input type="hidden" id="lat">
-<input type="hidden" id="lon">
-
-<button type="submit">Submit</button>
-
-</form>
-
 <script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwUMVfgNSN9SAP4iWeA0Bjrd0iWC4-uD7xm0zCHKgNFuiRdK4PKlCVYMQIEmonEj4jf/exec";
+const scriptURL = "PASTE_YOUR_LATEST_WEB_APP_URL_HERE";
 
-// single select
-function singleSelect(name) {
-  document.getElementsByName(name).forEach(cb => {
-    cb.onclick = () => {
-      document.getElementsByName(name).forEach(c => c.checked = false);
-      cb.checked = true;
-      if (name === "late") {
-        document.getElementById("remarksBox").style.display =
-          cb.value === "Yes" ? "block" : "none";
-      }
-    };
-  });
-}
-singleSelect("attendance");
-singleSelect("late");
-
-// location
-navigator.geolocation.getCurrentPosition(pos => {
-  lat.value = pos.coords.latitude;
-  lon.value = pos.coords.longitude;
-});
-
-// submit
 document.getElementById("attendanceForm").addEventListener("submit", e => {
   e.preventDefault();
 
@@ -109,18 +12,18 @@ document.getElementById("attendanceForm").addEventListener("submit", e => {
     return;
   }
 
+  const formData = new FormData();
+  formData.append("emp_name", emp_name.value);
+  formData.append("Site_Name", site_name.value);
+  formData.append("attendance_type", attendance);
+  formData.append("late_status", late);
+  formData.append("remarks", remarks.value || "");
+  formData.append("latitude", lat.value);
+  formData.append("longitude", lon.value);
+
   fetch(scriptURL, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      emp_name: emp_name.value,
-      Site_Name: site_name.value,
-      attendance_type: attendance,
-      late_status: late,
-      remarks: remarks.value || "",
-      latitude: lat.value,
-      longitude: lon.value
-    })
+    body: formData
   })
   .then(() => {
     alert("Attendance Submitted ✅");
@@ -130,7 +33,3 @@ document.getElementById("attendanceForm").addEventListener("submit", e => {
   .catch(() => alert("Error submitting form"));
 });
 </script>
-
-</body>
-</html>
-
