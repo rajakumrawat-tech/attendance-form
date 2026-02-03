@@ -1,36 +1,64 @@
-<script>
-const scriptURL = "https://script.google.com/macros/s/AKfycbwUMVfgNSN9SAP4iWeA0Bjrd0iWC4-uD7xm0zCHKgNFuiRdK4PKlCVYMQIEmonEj4jf/exec";
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Attendance</title>
+</head>
+<body>
 
-document.getElementById("attendanceForm").addEventListener("submit", e => {
+<h2>Attendance Form</h2>
+
+<form id="attendanceForm">
+  <input type="text" id="emp_name" placeholder="Employee Name" required><br><br>
+  <input type="text" id="site_name" placeholder="Site Name" required><br><br>
+
+  <label>
+    <input type="radio" name="attendance" value="Check In" required>
+    Check In
+  </label>
+  <label>
+    <input type="radio" name="attendance" value="Check Out">
+    Check Out
+  </label>
+  <br><br>
+
+  <label>
+    <input type="radio" name="late" value="No" required>
+    Not Late
+  </label>
+  <label>
+    <input type="radio" name="late" value="Yes">
+    Late
+  </label>
+  <br><br>
+
+  <input type="text" id="remarks" placeholder="Remarks"><br><br>
+
+  <button type="submit">Submit</button>
+</form>
+
+<script>
+const scriptURL = "PASTE_WEB_APP_URL_HERE";
+
+document.getElementById("attendanceForm").addEventListener("submit", function(e){
   e.preventDefault();
 
-  const attendance = document.querySelector('input[name="attendance"]:checked')?.value;
-  const late = document.querySelector('input[name="late"]:checked')?.value;
-
-  if (!attendance || !late) {
-    alert("Select Attendance & Late status");
-    return;
-  }
-
-  const formData = new FormData();
-  formData.append("emp_name", emp_name.value);
-  formData.append("Site_Name", site_name.value);
-  formData.append("attendance_type", attendance);
-  formData.append("late_status", late);
-  formData.append("remarks", remarks.value || "");
-  formData.append("latitude", lat.value);
-  formData.append("longitude", lon.value);
+  const data = {
+    emp_name: document.getElementById("emp_name").value,
+    Site_Name: document.getElementById("site_name").value,
+    attendance_type: document.querySelector('input[name="attendance"]:checked').value,
+    late_status: document.querySelector('input[name="late"]:checked').value,
+    remarks: document.getElementById("remarks").value
+  };
 
   fetch(scriptURL, {
     method: "POST",
-    body: formData
+    body: JSON.stringify(data)
   })
-  .then(() => {
-    alert("Attendance Submitted ✅");
-    e.target.reset();
-    remarksBox.style.display = "none";
-  })
-  .catch(() => alert("Error submitting form"));
+  .then(() => alert("Submitted"))
+  .catch(() => alert("Error"));
 });
 </script>
 
+</body>
+</html>
