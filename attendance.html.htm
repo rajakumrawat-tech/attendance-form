@@ -1,0 +1,51 @@
+<script>
+const scriptURL = "https://script.google.com/macros/s/AKfycbw5ASXqpHIM-Bd6GqnodeN3pxDlQFrdj2YSXsOiT9t9opQQeDl6Wr2dYx5hku0FaOP4/exec";
+
+navigator.geolocation.getCurrentPosition(pos => {
+  document.getElementById("lat").value = pos.coords.latitude;
+  document.getElementById("lon").value = pos.coords.longitude;
+});
+
+document.getElementById("attendanceForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const attendance = document.querySelector('input[name="attendance"]:checked')?.value;
+  const late = document.querySelector('input[name="late"]:checked')?.value;
+
+  if (!attendance || !late) {
+    alert("Select Attendance & Late status");
+    return;
+  }
+
+  const data = {
+    emp_name: emp_name.value,
+    Site_Name: site_name.value,
+    attendance_type: attendance,
+    late_status: late,
+    remarks: remarks.value || "",
+    latitude: lat.value,
+    longitude: lon.value
+  };
+
+  fetch(scriptURL, {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: { "Content-Type": "application/json" }
+  })
+  .then(res => res.json())
+  .then(res => {
+    if (res.status === "success") {
+      alert("Attendance Submitted ✅");
+      e.target.reset();
+      remarksBox.style.display = "none";
+    } else {
+      alert("Script Error");
+      console.log(res);
+    }
+  })
+  .catch(err => {
+    alert("Network Error");
+    console.error(err);
+  });
+});
+</script>
