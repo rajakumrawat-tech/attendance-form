@@ -43,26 +43,52 @@ const scriptURL = "https://script.google.com/macros/s/AKfycbyTBHy8KEWrUTayBQ6t4t
 document.getElementById("attendanceForm").addEventListener("submit", function(e){
   e.preventDefault();
 
-  const data = {
-    emp_name: document.getElementById("emp_name").value,
-    Site_Name: document.getElementById("site_name").value,
-    attendance_type: document.querySelector('input[name="attendance"]:checked').value,
-    late_status: document.querySelector('input[name="late"]:checked').value,
-    remarks: document.getElementById("remarks").value
-  };
+  // Default latitude/longitude
+  let latitude = "";
+  let longitude = "";
 
-  fetch(scriptURL, {
-    method: "POST",
-    body: JSON.stringify(data)
-  })
-  .then(() => alert("Submitted ✅"))
-  .catch(() => alert("Error ❌"));
+  // Geolocation try
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        latitude = position.coords.latitude;
+        longitude = position.coords.longitude;
+        sendData(latitude, longitude);
+      },
+      function(error) {
+        // User denied or error → send blank
+        sendData(latitude, longitude);
+      }
+    );
+  } else {
+    // Geolocation not supported
+    sendData(latitude, longitude);
+  }
+
+  function sendData(lat, long) {
+    const data = {
+      emp_name: document.getElementById("emp_name").value,
+      Site_Name: document.getElementById("site_name").value,
+      attendance_type: document.querySelector('input[name="attendance"]:checked').value,
+      late_status: document.querySelector('input[name="late"]:checked').value,
+      remarks: document.getElementById("remarks").value,
+      latitude: lat,
+      longitude: long
+    };
+
+    fetch(scriptURL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    })
+    .then(() => {
+      alert("Submitted ✅");
+      document.getElementById("attendanceForm").reset(); // form clear
+    })
+    .catch(() => alert("Error ❌"));
+  }
+
 });
 </script>
 
 </body>
 </html>
-
-
-
-
