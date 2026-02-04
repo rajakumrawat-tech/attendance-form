@@ -9,84 +9,73 @@
 <h2>Attendance Form</h2>
 
 <form id="attendanceForm">
-  <input type="text" id="emp_name" placeholder="Employee Name" required><br><br>
-  <input type="text" id="site_name" placeholder="Site Name" required><br><br>
+  <input type="text" name="emp_name" placeholder="Employee Name" required><br><br>
+  <input type="text" name="site_name" placeholder="Site Name" required><br><br>
 
   <label>
-    <input type="radio" name="attendance" value="Check In" required>
+    <input type="radio" name="attendance_type" value="Check In" required>
     Check In
   </label>
   <label>
-    <input type="radio" name="attendance" value="Check Out">
+    <input type="radio" name="attendance_type" value="Check Out">
     Check Out
   </label>
   <br><br>
 
   <label>
-    <input type="radio" name="late" value="No" required>
+    <input type="radio" name="late_status" value="No" required>
     Not Late
   </label>
   <label>
-    <input type="radio" name="late" value="Yes">
+    <input type="radio" name="late_status" value="Yes">
     Late
   </label>
   <br><br>
 
-  <input type="text" id="remarks" placeholder="Remarks"><br><br>
+  <input type="text" name="remarks" placeholder="Remarks"><br><br>
+
+  <!-- hidden fields for location -->
+  <input type="hidden" name="latitude">
+  <input type="hidden" name="longitude">
 
   <button type="submit">Submit</button>
 </form>
 
 <script>
 const scriptURL = "https://script.google.com/macros/s/AKfycbyTBHy8KEWrUTayBQ6t4t-1P5_j_jlYTShzO2hIzQ1QHKIwwNuS00Qr91QIaROfsScn/exec";
+const form = document.getElementById("attendanceForm");
 
-document.getElementById("attendanceForm").addEventListener("submit", function(e){
+form.addEventListener("submit", function(e){
   e.preventDefault();
 
-  // Default latitude/longitude
-  let latitude = "";
-  let longitude = "";
-
-  // Geolocation try
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      function(position) {
-        latitude = position.coords.latitude;
-        longitude = position.coords.longitude;
-        sendData(latitude, longitude);
+      function(pos) {
+        form.latitude.value = pos.coords.latitude;
+        form.longitude.value = pos.coords.longitude;
+        submitForm();
       },
-      function(error) {
-        // User denied or error → send blank
-        sendData(latitude, longitude);
+      function() {
+        submitForm(); // location deny hua to bhi submit
       }
     );
   } else {
-    // Geolocation not supported
-    sendData(latitude, longitude);
+    submitForm();
   }
 
-  function sendData(lat, long) {
-    const data = {
-      emp_name: document.getElementById("emp_name").value,
-      Site_Name: document.getElementById("site_name").value,
-      attendance_type: document.querySelector('input[name="attendance"]:checked').value,
-      late_status: document.querySelector('input[name="late"]:checked').value,
-      remarks: document.getElementById("remarks").value,
-      latitude: lat,
-      longitude: long
-    };
+  function submitForm() {
+    const formData = new FormData(form);
 
     fetch(scriptURL, {
       method: "POST",
-      body: JSON.stringify(data)
+      body: formData
     })
     .then(() => {
-      alert("Submitted ✅");
-      document.getElementById("attendanceForm").reset(); // form clear
+      alert("Attendance Submitted ✅");
+      form.reset();
     })
     .catch(() => alert("Error ❌"));
   }
-
 });
 </script>
 
