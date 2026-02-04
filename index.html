@@ -9,73 +9,85 @@
 <h2>Attendance Form</h2>
 
 <form id="attendanceForm">
-  <input type="text" name="emp_name" placeholder="Employee Name" required><br><br>
-  <input type="text" name="site_name" placeholder="Site Name" required><br><br>
+
+  <input type="text" id="emp_name" placeholder="Employee Name" required><br><br>
+  <input type="text" id="site_name" placeholder="Site Name" required><br><br>
 
   <label>
-    <input type="radio" name="attendance_type" value="Check In" required>
-    Check In
+    <input type="radio" name="attendance" value="Check In" required> Check In
   </label>
   <label>
-    <input type="radio" name="attendance_type" value="Check Out">
-    Check Out
-  </label>
-  <br><br>
-
-  <label>
-    <input type="radio" name="late_status" value="No" required>
-    Not Late
-  </label>
-  <label>
-    <input type="radio" name="late_status" value="Yes">
-    Late
+    <input type="radio" name="attendance" value="Check Out"> Check Out
   </label>
   <br><br>
 
-  <input type="text" name="remarks" placeholder="Remarks"><br><br>
+  <label>
+    <input type="radio" name="late" value="No" required> Not Late
+  </label>
+  <label>
+    <input type="radio" name="late" value="Yes"> Late
+  </label>
+  <br><br>
 
-  <!-- hidden fields for location -->
-  <input type="hidden" name="latitude">
-  <input type="hidden" name="longitude">
+  <input type="text" id="remarks" placeholder="Remarks"><br><br>
+
+  <!-- SIMPLE CHECKBOX (no location word) -->
+  <label>
+    <input type="checkbox" id="confirmAttendance" required>
+    I confirm my attendance
+  </label>
+  <br><br>
 
   <button type="submit">Submit</button>
 </form>
 
 <script>
 const scriptURL = "https://script.google.com/macros/s/AKfycbyTBHy8KEWrUTayBQ6t4t-1P5_j_jlYTShzO2hIzQ1QHKIwwNuS00Qr91QIaROfsScn/exec";
-const form = document.getElementById("attendanceForm");
 
-form.addEventListener("submit", function(e){
-  e.preventDefault();
+let latitude = "";
+let longitude = "";
+let timestamp = "";
+
+document.getElementById("confirmAttendance").addEventListener("change", function () {
+  timestamp = new Date().toLocaleString();
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      function(pos) {
-        form.latitude.value = pos.coords.latitude;
-        form.longitude.value = pos.coords.longitude;
-        submitForm();
+      (pos) => {
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
       },
-      function() {
-        submitForm(); // location deny hua to bhi submit
+      () => {
+        latitude = "";
+        longitude = "";
       }
     );
-  } else {
-    submitForm();
   }
+});
 
-  function submitForm() {
-    const formData = new FormData(form);
+document.getElementById("attendanceForm").addEventListener("submit", function(e){
+  e.preventDefault();
 
-    fetch(scriptURL, {
-      method: "POST",
-      body: formData
-    })
-    .then(() => {
-      alert("Attendance Submitted ✅");
-      form.reset();
-    })
-    .catch(() => alert("Error ❌"));
-  }
+  const data = {
+    emp_name: emp_name.value,
+    site_name: site_name.value,
+    attendance_type: document.querySelector('input[name="attendance"]:checked').value,
+    late_status: document.querySelector('input[name="late"]:checked').value,
+    remarks: remarks.value,
+    latitude: latitude,
+    longitude: longitude,
+    timestamp: timestamp
+  };
+
+  fetch(scriptURL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  })
+  .then(() => {
+    alert("Attendance Submitted ✅");
+    attendanceForm.reset();
+  })
+  .catch(() => alert("Error ❌"));
 });
 </script>
 
