@@ -31,7 +31,7 @@
 
   <input type="text" id="remarks" placeholder="Remarks"><br><br>
 
-  <!-- SIMPLE CHECKBOX (no location word) -->
+  <!-- SIMPLE CONFIRM CHECKBOX -->
   <label>
     <input type="checkbox" id="confirmAttendance" required>
     I confirm my attendance
@@ -48,16 +48,17 @@ let latitude = "";
 let longitude = "";
 let timestamp = "";
 
+// checkbox tick → location + time
 document.getElementById("confirmAttendance").addEventListener("change", function () {
   timestamp = new Date().toLocaleString();
 
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      function(pos) {
         latitude = pos.coords.latitude;
         longitude = pos.coords.longitude;
       },
-      () => {
+      function() {
         latitude = "";
         longitude = "";
       }
@@ -69,11 +70,11 @@ document.getElementById("attendanceForm").addEventListener("submit", function(e)
   e.preventDefault();
 
   const data = {
-    emp_name: emp_name.value,
-    site_name: site_name.value,
+    emp_name: document.getElementById("emp_name").value,
+    site_name: document.getElementById("site_name").value,
     attendance_type: document.querySelector('input[name="attendance"]:checked').value,
     late_status: document.querySelector('input[name="late"]:checked').value,
-    remarks: remarks.value,
+    remarks: document.getElementById("remarks").value,
     latitude: latitude,
     longitude: longitude,
     timestamp: timestamp
@@ -81,11 +82,18 @@ document.getElementById("attendanceForm").addEventListener("submit", function(e)
 
   fetch(scriptURL, {
     method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
     body: JSON.stringify(data)
   })
+  .then(res => res.text())
   .then(() => {
     alert("Attendance Submitted ✅");
-    attendanceForm.reset();
+    document.getElementById("attendanceForm").reset();
+    latitude = "";
+    longitude = "";
+    timestamp = "";
   })
   .catch(() => alert("Error ❌"));
 });
